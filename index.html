@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Performance Site Ayming.fr · Juillet 2026</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://ayming-france.github.io/assets/engine/slides.css">
+  <style>
+    /* ===== Insights-specific overrides ===== */
+    :root {
+      --ay-primary: #11a9e6;
+      --ay-accent: #0da4e8;
+      --ay-dark: #00456d;
+      --ay-success: #0ab38c;
+      --ay-warning: #f59e0b;
+      --ay-danger: #ef4444;
+      --ay-text: #0f172a;
+      --ay-gray: #6b7280;
+      --ay-light: #9ca3af;
+      --ay-bg-subtle: #eef2f6;
+      --ay-bg-light: #f8fafc;
+    }
+
+    /* Layout helpers */
+    .slide-inner.insights { padding: 56px 72px; }
+    .slide-title.compact { margin-bottom: 28px; font-size: 32px; }
+    .slide-eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ay-primary);
+      margin-bottom: 8px;
+    }
+
+    /* KPI tile grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+    .kpi-tile {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px 22px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .kpi-tile .kpi-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ay-gray);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .kpi-tile .kpi-value {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--ay-dark);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .kpi-tile .kpi-delta {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .kpi-delta.up { color: var(--ay-success); }
+    .kpi-delta.down { color: var(--ay-danger); }
+    .kpi-delta.flat { color: var(--ay-gray); }
+    .kpi-tile .kpi-sub { font-size: 12px; color: var(--ay-light); margin-top: 4px; }
+
+    /* Insight callouts */
+    .insight-callouts {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+    .insight-card {
+      background: linear-gradient(135deg, #f8fafc 0%, #eef2f6 100%);
+      border-left: 4px solid var(--ay-primary);
+      border-radius: 10px;
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    /* Single accent: card colors carried no meaning for the audience (feedback 2026-06-11) */
+    .insight-card.success, .insight-card.warning, .insight-card.danger { border-left-color: var(--ay-primary); }
+    .insight-card h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--ay-dark);
+      margin: 0 0 8px 0;
+    }
+    .insight-card p {
+      font-size: 13px;
+      color: var(--ay-text);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    /* Data tables */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .data-table thead th {
+      background: var(--ay-dark);
+      color: #fff;
+      text-align: left;
+      padding: 10px 14px;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .data-table tbody td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #f1f5f9;
+      color: var(--ay-text);
+    }
+    .data-table tbody tr:nth-child(even) td { background: var(--ay-bg-light); }
+    .data-table td.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; white-space: nowrap; }
+    .data-table td.pos { color: var(--ay-success); }
+    .data-table td.neg { color: var(--ay-danger); }
+
+    /* Horizontal bar chart */
+    .hbar-chart { display: flex; flex-direction: column; gap: 10px; }
+    .hbar-row { display: grid; grid-template-columns: 160px 1fr 90px; align-items: center; gap: 12px; font-size: 13px; }
+    .hbar-label { color: var(--ay-text); font-weight: 600; }
+    .hbar-track { height: 22px; background: #eef2f6; border-radius: 4px; overflow: hidden; }
+    .hbar-fill { height: 100%; background: linear-gradient(90deg, var(--ay-primary), var(--ay-success)); border-radius: 4px; }
+    .hbar-value { font-variant-numeric: tabular-nums; color: var(--ay-gray); text-align: right; font-weight: 600; }
+
+    /* Monthly mini trend */
+    .month-trend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 6px; }
+    .month-cell { background: var(--ay-bg-subtle); padding: 8px 10px; border-radius: 6px; }
+    .month-cell .m-label { font-size: 10px; text-transform: uppercase; color: var(--ay-gray); font-weight: 700; letter-spacing: 0.5px; }
+    .month-cell .m-val { font-size: 16px; font-weight: 700; color: var(--ay-dark); }
+
+    /* Two-column layout */
+    .two-col { display: grid; grid-template-columns: 1.1fr 1fr; gap: 32px; align-items: start; }
+    .two-col h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--ay-dark);
+      margin: 0 0 14px 0;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--ay-primary);
+    }
+
+    /* Big stat */
+    .big-stat { display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+    .big-stat .num { font-size: 64px; font-weight: 700; color: var(--ay-dark); line-height: 1; }
+    .big-stat .unit { font-size: 20px; font-weight: 600; color: var(--ay-primary); }
+
+    /* Footnote */
+    .footnote { font-size: 11px; color: var(--ay-light); margin-top: 16px; font-style: italic; }
+
+    /* Fit helpers - every slide must fit the 1280x720 frame. */
+    .compact-fit .slide-inner.insights { padding-top: 18px; padding-bottom: 8px; }
+    .compact-fit .slide-title.compact { margin-bottom: 12px; }
+    .compact-fit .kpi-tile { padding: 12px 18px; }
+    .compact-fit .data-table thead th { padding-top: 5px; padding-bottom: 5px; }
+    .compact-fit .data-table tbody td { padding-top: 5px; padding-bottom: 5px; }
+    .compact-fit .insight-card { padding: 12px 16px; }
+    .compact-fit .footnote { margin-top: 8px; }
+    .compact-fit .reco-item { padding: 13px 18px; }
+    .compact-fit .reco-list { margin-top: 10px; gap: 14px; }
+    .compact-fit .reco-item .reco-num { margin-bottom: 6px; }
+
+    .breathe-fit .slide-inner.insights { padding-top: 32px; padding-bottom: 14px; }
+    .breathe-fit .slide-title.compact { margin-bottom: 20px; }
+    .breathe-fit .data-table thead th { padding-top: 8px; padding-bottom: 8px; }
+    .breathe-fit .data-table tbody td { padding-top: 8px; padding-bottom: 8px; }
+
+    /* Author credit - anti-plagiarism, shown on every slide. */
+    .deck-credit {
+      position: fixed;
+      bottom: 18px; left: 26px;
+      font-size: 11px; font-weight: 700;
+      color: var(--ay-gray); letter-spacing: 0.3px;
+      z-index: 90; white-space: nowrap;
+      pointer-events: none;
+    }
+    .cover-credit {
+      margin-top: 20px; font-size: 12px; font-weight: 700;
+      color: #fff; letter-spacing: 0.3px; opacity: 0.9;
+    }
+
+    /* Reco list */
+    .reco-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-top: 20px; }
+    .reco-item {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 20px 22px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .reco-item .reco-num {
+      display: inline-flex;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--ay-primary);
+      color: #fff;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .reco-item h4 { font-size: 15px; font-weight: 700; color: var(--ay-dark); margin: 0 0 8px 0; }
+    .reco-item p { font-size: 13px; color: var(--ay-text); line-height: 1.5; margin: 0; }
+    .reco-item .reco-owner { display: inline-block; margin-top: 10px; font-size: 11px; font-weight: 600; color: var(--ay-primary); text-transform: uppercase; letter-spacing: 0.5px; }
+  </style>
+</head>
+<body>
+
+  <!-- Chapter Navigation -->
+  <nav class="chapter-nav">
+    <div class="nav-toggle"><span></span><span></span><span></span></div>
+
+    <div class="nav-header">
+      <div class="nav-logo">
+        <img src="https://raw.githubusercontent.com/ayming-france/assets/main/logos/ayming-logo.png" alt="Ayming">
+      </div>
+      <a class="nav-subtitle" href="https://www.ayming.fr" target="_blank">Performance Site · Juillet 2026</a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Vue d'ensemble</div>
+      <div class="nav-item active" data-slide="0"><span class="nav-item-number">01</span>Couverture</div>
+      <div class="nav-item" data-slide="1"><span class="nav-item-number">02</span>Synthèse</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">SEO</div>
+      <div class="nav-item" data-slide="2"><span class="nav-item-number">03</span>Le paradoxe Google</div>
+      <div class="nav-item" data-slide="3"><span class="nav-item-number">04</span>Requêtes &amp; catégories</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Acquisition</div>
+      <div class="nav-item" data-slide="4"><span class="nav-item-number">05</span>Mix &amp; conversion par canal</div>
+      <div class="nav-item" data-slide="5"><span class="nav-item-number">06</span>Évolution mensuelle</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Engagement</div>
+      <div class="nav-item" data-slide="6"><span class="nav-item-number">07</span>Top contenus téléchargés</div>
+      <div class="nav-item" data-slide="7"><span class="nav-item-number">08</span>Articles à fort trafic</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Émergent &amp; actions</div>
+      <div class="nav-item" data-slide="8"><span class="nav-item-number">09</span>Trafic IA</div>
+      <div class="nav-item" data-slide="9"><span class="nav-item-number">10</span>Recommandations</div>
+    </div>
+  </nav>
+
+  <!-- Slide Counter -->
+  <div class="slide-counter"><span class="current">1</span>/10</div>
+
+  <!-- Presentation -->
+  <main class="presentation">
+
+    <!-- ========== SLIDE 0: COVER ========== -->
+    <section class="slide cover active" data-chapter="cover">
+      <div class="cover-layout">
+        <div class="cover-left">
+          <div class="cover-logo">
+            <img src="https://raw.githubusercontent.com/ayming-france/assets/main/logos/ayming-logo.png" alt="Ayming">
+          </div>
+          <h1 class="cover-title">Performance du site<br>ayming.fr</h1>
+          <p class="cover-subtitle">Synthèse mensuelle équipe Marketing<br>Juillet 2026</p>
+          <p class="cover-credit">José J Encarnación Saiter | Marketing France · 15 septembre 2026</p>
+        </div>
+        <div class="cover-right">
+          <img class="cover-image" src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&q=80" alt="Analytics">
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SLIDE 1: SYNTHESE ========== -->
+    <section class="slide breathe-fit" data-chapter="synthese">
+      <div class="slide-inner insights">
+        <div class="slide-eyebrow">Synthèse exécutive</div>
+        <h1 class="slide-title compact">Après le pic du Baromètre, le site revient à son niveau de mai</h1>
+
+        <div class="kpi-grid">
+          <div class="kpi-tile">
+            <div class="kpi-label">Sessions</div>
+            <div class="kpi-value">5 738</div>
+            <div class="kpi-delta down">-26 % vs juin</div>
+            <div class="kpi-sub">Mois le plus bas de l'année (6 133 en mai)</div>
+          </div>
+          <div class="kpi-tile">
+            <div class="kpi-label">Taux d'engagement</div>
+            <div class="kpi-value">87,4 %</div>
+            <div class="kpi-delta down">-2,4 pts vs juin</div>
+            <div class="kpi-sub">Près de 9 sessions sur 10 restent engagées</div>
+          </div>
+          <div class="kpi-tile">
+            <div class="kpi-label">Pages vues</div>
+            <div class="kpi-value">12 114</div>
+            <div class="kpi-delta down">-18 % vs juin</div>
+            <div class="kpi-sub">2,11 pages par session, contre 1,92 en juin</div>
+          </div>
+          <div class="kpi-tile">
+            <div class="kpi-label">Conversions</div>
+            <div class="kpi-value">315</div>
+            <div class="kpi-delta down">CVR 5,49 % · 879 en juin</div>
+            <div class="kpi-sub">Mai, avant le lancement : 366 conv. (CVR 6,0 %)</div>
+          </div>
+        </div>
+
+        <div class="insight-callouts">
+          <div class="insight-card">
+            <h4>Juin était un pic, pas un nouveau palier</h4>
+            <p>315 conversions et 5,49 % de CVR en juillet, très proche de mai (366 et 6,0 %) avant la sortie du Baromètre. Le mois de juin reste l'exception annuelle.</p>
+          </div>
+          <div class="insight-card warning">
+            <h4>Les clics SEO reculent plus vite que les affichages</h4>
+            <p>Affichages Google -15 % (179 466 à 152 005), clics -25 % (5 667 à 4 260). Le CTR passe de 3,16 % à 2,80 %.</p>
+          </div>
+          <div class="insight-card warning">
+            <h4>Le canal IA perd les deux tiers de son volume</h4>
+            <p>133 sessions en juin, 49 en juillet, quand le site n'en perd que 26 %. Première rupture depuis janvier, et ce n'est pas un défaut de mesure.</p>
+          </div>
+        </div>
+      </div>
+      <div class="company-logo"><img src="https://raw.githubusercontent.com/ayming-france/assets/main/logos/ayming-logo.png" alt="Ayming"></div>
+    </section>
+
+    <!-- ========== SLIDE 2: SEO - PARADOXE GOOGLE ========== -->
+    <section class="slide breathe-fit" data-chapter="seo">
+      <div class="slide-inner insights">
+        <div class="slide-eyebrow">SEO · Google &amp; Bing</div>
+        <h1 class="slide-title compact">Les affichages reculent de 15 %, les clics de 25 %</h1>
+
+        <div class="two-col" style="grid-template-columns: 1.15fr 1fr; gap: 24px;">
+          <div>
+            <h3>Google · juin vs juillet</h3>
+            <table class="data-table">
+              <thead><tr><th>Mois</th><th class="num">Impressions</th><th class="num">Clics</th><th class="num">CTR</th></tr></thead>
+              <tbody>
+                <tr><td>Juin</td><td class="num">179 466</td><td class="num">5 667</td><td class="num">3,16 %</td></tr>
+                <tr><td>Juillet</td><td class="num neg">152 005</td><td class="num neg">4 260</td><td class="num neg">2,80 %</td></tr>
+              </tbody>
+            </table>
+            <p style="font-size:12.5px; color:var(--ay-gray); margin-top:10px; line-height:1.6;">
+              27 461 affichages et 1 407 clics de moins. Le taux de clic perd 0,36 point, il revient sous le niveau de mai (2,91 %).
+            </p>
+          </div>
+          <div>
+            <h3>Bing · juin vs juillet</h3>
+            <table class="data-table">
+              <thead><tr><th>Mois</th><th class="num">Impressions</th><th class="num">Clics</th><th class="num">CTR</th></tr></thead>
+              <tbody>
+                <tr><td>Juin</td><td class="num">1 965</td><td class="num">364</td><td class="num">18,5 %</td></tr>
+                <tr><td>Juillet</td><td class="num pos">2 431</td><td class="num">300</td><td class="num neg">12,3 %</td></tr>
+              </tbody>
+            </table>
+            <p style="font-size:12.5px; color:var(--ay-gray); margin-top:10px; line-height:1.6;">
+              Bing gagne 24 % d'affichages et perd 18 % de clics. Le CTR reste quatre fois supérieur à celui de Google.
+            </p>
+          </div>
+        </div>
+
+        <div class="insight-callouts" style="margin-top:28px;">
+          <div class="insight-card warning">
+            <h4>Le recul touche le clic avant la visibilité</h4>
+            <p>Les affichages tiennent mieux que les clics sur les deux moteurs. Nous restons affichés autant, nous sommes moins choisis.</p>
+          </div>
+          <div class="insight-card">
+            <h4>La saisonnalité est l'hypothèse principale</h4>
+            <p>Juillet est un mois creux en B2B. À confirmer avec août avant de conclure à un effet de classement ou d'AI Overviews.</p>
+          </div>
+          <div class="insight-card">
+            <h4>Bing gagne en visibilité</h4>
+            <p>2 431 affichages, le plus haut des trois derniers mois. Bing alimente Copilot, ce volume compte au-delà de ses 300 clics.</p>
+          </div>
+        </div>
+      </div>
+      <div class="company-logo"><img src="https://raw.githubusercontent.com/ayming-france/assets/main/logos/ayming-logo.png" alt="Ayming"></div>
+    </section>
+
+    <!-- ========== SLIDE 3: SEO - REQUETES & CATEGORIES ========== -->
+    <section class="slide" data-chapter="seo" id="s-demande">
+      <style>
+        #s-demande .slide-inner.insights { padding:30px 48px 22px; width:100%; box-sizing:border-box; }
+        #s-demande .data-table thead th { padding-top:10px; padding-bottom:10px; }
+        #s-demande .data-table tbody td { padding-top:13px; padding-bottom:13px; font-size:14.5px; }
+        #s-demande .two-col h3 { font-size:17px; margin-bottom:14px; }
+        #s-demande .two-col { margin-top:20px; }
+        #s-demande .two-col { width:100%; }
+        #s-demande .seo-bar { width:100%; }
+        /* left table has 3 rows vs 5 on the right: taller rows so both columns end level */
+        #s-demande .two-col > div:first-child .data-table tbody td { padding-top:29px; padding-bottom:29px; }
+      </style>
+      <div class="slide-inner insights">
+        <div class="slide-eyebrow">SEO · Demande captée</div>
+        <h1 class="slide-title compact">La marque porte 8 clics identifiés sur 10</h1>
+
+        <!-- Répartition des clics identifiés (Google + Bing, hors requêtes anonymisées) -->
+        <div class="seo-bar" style="margin-bottom:10px;">
+          <div style="display:flex; height:34px; border-radius:8px; overflow:hidden; font-weight:700; color:#fff; font-size:13.5px;">
+            <div style="flex:0 0 82.5%; background:var(--ay-dark); display:flex; align-items:center; justify-content:center;">Brand &amp; produits · 82 %</div>
+            <div style="flex:0 0 16.3%; background:var(--ay-primary); display:flex; align-items:center; justify-content:center;">Business · 16 %</div>
+            <div style="flex:1; background:var(--ay-success); display:flex; align-items:center; justify-content:center; white-space:nowrap; font-size:11px;">1 %</div>
+          </div>
+          <div style="text-align:center; font-size:12.5px; color:var(--ay-gray); margin-top:7px;">
+            Brand : 1 679 clics · CTR 5,2 % &nbsp;·&nbsp; Non-brand business : 332 clics · CTR 0,8 % &nbsp;·&nbsp; Recrutement : 25 clics · CTR 3,1 %
+          </div>
+        </div>
+
+        <div class="two-col" style="grid-template-columns: 1fr 1fr; gap: 26px;">
+          <div>
+            <h3>Trafic organique par expertise</h3>
+            <table class="data-table">
+              <thead><tr><th>Expertise</th><th class="num">Affichages</th><th class="num">Clics</th><th class="num">CTR</th></tr></thead>
+              <tbody>
+                <tr><td>RH</td><td class="num">10 371</td><td class="num">163</td><td class="num">1,57 %</td></tr>
+                <tr><td>INNO</td><td class="num">7 075</td><td class="num">93</td><td class="num">1,31 %</td></tr>
+                <tr><td>TAX</td><td class="num">1 882</td><td class="num">40</td><td class="num pos">2,13 %</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div>
+            <h3>Clics par catégorie de page</h3>
+            <table class="data-table">
+              <thead><tr><th>Catégorie</th><th class="num">Clics</th><th class="num" style="white-space:nowrap;">CTR</th><th class="num">Pos.</th></tr></thead>
+              <tbody>
+                <tr><td>Articles</td><td class="num">1 466</td><td class="num neg">2,12 %</td><td class="num">15,7</td></tr>
+                <tr><td>Homepage</td><td class="num">1 340</td><td class="num pos">13,59 %</td><td class="num">12,4</td></tr>
+                <tr><td>Guides</td><td class="num">423</td><td class="num">3,42 %</td><td class="num">16,7</td></tr>
+                <tr><td>Expertise</td><td class="num">327</td><td class="num neg">1,33 %</td><td class="num">15,1</td></tr>
+                <tr><td>Carrière</td><td class="num">273</td><td class="num">3,61 %</td><td class="num">8,5</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+      <div class="company-logo"><img src="https://raw.githubusercontent.com/ayming-france/assets/main/logos/ayming-logo.png" alt="Ayming"></div>
+    </section>
+
+    <!-- ========== SLIDE 4: ACQUISITION - MIX CANAUX ========== -->
+    <section class="slide compact-fit" data-chapter="acquisition">
+      <div class="slide-inner insights">
+        <div class="slide-eyebrow">Acquisition · Vue d'ensemble</div>
+        <h1 class="slide-title compact">L'email convertit encore un visiteur sur deux, le payant reste sous l'organique</h1>
+
+        <div class="two-col">
+          <div>
+            <h3>Sessions par canal · juillet</h3>
+            <div class="hbar-chart">
+              <div class="hbar-row"><span class="hbar-label">Organic Search</span><div class="hbar-track"><div class="hbar-fill" style="width:100%"></div></div><span class="hbar-value">2 779</span></div>
+              <div class="hbar-row"><span class="hbar-label">Paid Search</span><div class="hbar-track"><div class="hbar-fill" style="width:46%"></div></div><span class="hbar-value">1 284</span></div>
+              <div class="hbar-row"><span class="hbar-label">Direct</span><div class="hbar-track"><div class="hbar-fill" style="width:20%"></div></div><span class="hbar-value">564</span></div>
+              <div class="hbar-row"><span class="hbar-label">Social</span><div class="hbar-track"><div class="hbar-fill" style="width:14%"></div></div><span class="hbar-value">380</span></div>
+              <div class="hbar-row"><span class="hbar-label">Email</span><div class="hbar-track"><div class="hbar-fill" style="width:9%"></div></div><span class="hbar-value">253</span></div>
+              <div class="hbar-row"><span class="hbar-label">Internal</span><div class="hbar-track"><div class="hbar-fill" style="width:6%"></div></div><span class="hbar-value">163</span></div>
+              <div class="hbar-row"><span class="hbar-label">Referral</span><div class="hbar-track"><div class="hbar-fill" style="width:5%"></div></div><span class="hbar-value">129</span></div>
+              <div class="hbar-row"><span class="hbar-label">Paid Social</span><div class="hbar-track"><div class="hbar-fill" style="width:3%"></div></div><span class="hbar-value">87</span></div>
+              <div class="hbar-row"><span class="hbar-label">AI / LLM</span><div class="hbar-track"><div class="hbar-fill" style="width:2%"></div></div><span class="hbar-value">49</span></div>
+            </div>
+          </div>
+
+          <div>
+            <h3>Taux de conversion par canal · juillet</h3>
+            <table class="data-table">
+              <thead><tr><th>Canal</th><th class="num">Sessions</th><th class="num">Conv.</th><th class="num">CVR</th></tr></thead>
+              <tbody>
+                <tr><td>Email</td><td class="num">253</td><td class="num">114</td><td class="num pos">45,1 %</td></tr>
+                <tr><td>Affiliate</td><td class="num">32</td><td class="num">11</td><td class="num pos">34,4 %</td></tr>
+                <tr><td>AI / LLM</td><td class="num">49</td><td class="num">5</td><td class="num pos">10,2 %</td></tr>
+                <tr><td>Social</td><td class="num">380</td><td class="num">35</td><td class="num pos">9,2 %</td></tr>
+                <tr><td>Supports *</td><td class="num">15</td><td class="num">1</td><td class="num">6,7 %</td></tr>
+                <tr><td>Referral</td><td class="num">129</td><td class="num">8</td><td class="num">6,2 %</td></tr>
+                <tr><td>Internal</td><td class="num">163</td><td class="num">8</td><td class="num">4,9 %</td></tr>
+                <tr><td>Direct</td><td class="num">564</td><td class="num">23</td><td class="num">4,1 %</td></tr>
+                <tr><td>Organic Search</td><td class="num">2 779</td><td class="num">74</td><td class="num">2,7 %</td></tr>
+                <tr><td>Paid Search</td><td class="num">1 284</td><td class="num">33</td><td class="num neg">2,6 %</td></tr>
+              </tbody>
+            </table>
+            <p class="footnote">* Supports = liens dans nos supports diffusés : bannière de la salle de webinaire (Webikeo), liens dans les PDF téléchargés, decks commerciaux. Les signaux du mois : <b>l'email retombe à 253 sessions</b> après les 690 du Baromètre mais garde 45 % de CVR ; <b>le Paid Search convertit à 2,6 %, sous l'organique à 2,7 %</b>, pour le deuxième mois consécutif.</p>
+          </div>
+        </div>
+      </div>
+      <div class="company-logo"><img src="https://raw.githubusercontent.com/ayming-france/assets/main/logos/ayming-logo.png" alt="Ayming"></div>
+    </section>
+
+    <!-- ========== SLIDE 5: ACQUISITION - STACKED BAR PAR MOIS ========== -->
+    <section class="slide compact-fit" data-chapter="acquisition">
+      <div class="slide-inner insights">
+        <div class="slide-eyebrow">Acquisition · Évolution mensuelle</div>
+        <h1 class="slide-title compact">Juillet est le mois le plus bas de l'année</h1>
+
+        <style>
+          .stacked-chart-wrap { background: var(--ay-bg-light); border-radius: 12px; padding: 24px 28px; }
+          .stacked-chart {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 18px;
+            height: 198px;
+            align-items: end;
+            padding: 0 12px;
+            border-bottom: 1px solid #cbd5e1;
+          }
+          .stacked-bar { display: flex; flex-direction: column; justify-content: flex-end; height: 100%; position: relative; }
+          .stacked-bar-total { position: absolute; top: -22px; left: 0; right: 0; text-align: center; font-size: 12px; font-weight: 700; color: var(--ay-dark); }
+          .stacked-bar-inner { display: flex; flex-direction: column-reverse; width: 100%; border-radius: 4px 4px 0 0; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+          .stack-seg { width: 100%; transition: opacity 0.2s; }
+          .stack-seg:hover { opacity: 0.85; }
+          .stacked-x { display: grid; grid-template-columns: repeat(7, 1fr); gap: 18px; padding: 10px 12px 0; text-align: center; font-size: 12.5px; font-weight: 600; color: var(--ay-text); }
+          .stacked-legend { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px 16px; margin-top: 14px; font-size: 12px; color: var(--ay-text); }
+          .stacked-legend .lg-item { display: inline-flex; align-items: center; gap: 6px; }
+          .stacked-legend .lg-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; }
+        </style>
+
+        <div class="stacked-chart-wrap">
+          <!-- Heights: bar height = month_total / max_month (Mar=9942) * 100% -->
+          <div class="stacked-chart">
+
+            <!-- JANVIER (8681, 87.3%) -->
+            <div class="stacked-bar" style="height: 87.3%;">
+              <span class="stacked-bar-total">8 681</span>
+              <div class="stacked-bar-inner" style="height: 100%;">
+                <div class="stack-seg" style="background:#4285F4; height:53.75%;" title="Organic Search · 4 666"></div>
+                <div class="stack-seg" style="background:#F5A623; height:19.01%;" title="Paid Search · 1 650"></div>
+                <div class="stack-seg" style="background:#A678D9; height:10.45%;" title="Direct · 907"></div>
+                <div class="stack-seg" style="background:#A0C66B; height:5.07%;" title="Social · 440"></div>
+                <div class="stack-seg" style="background:#00BCD4; height:4.62%;" title="Email · 401"></div>
+                <div class="stack-seg" style="background:#E8C547; height:2.59%;" title="Internal · 225"></div>
+                <div class="stack-seg" style="background:#E84C7E; height:1.66%;" title="Referral · 144"></div>
+                <div class="stack-seg" style="background:#0ab38c; height:1.47%;" title="AI / LLM · 128"></div>
+                <div class="stack-seg" style="background:#9AC9FB; height:0.48%;" title="Paid Social · 42"></div>
+                <div class="stack-seg" style="background:#C9A77A; height:0.45%;" title="Affiliate · 39"></div>
+                <div class="stack-seg" style="background:#0d5572; height:0.39%;" title="Supports · 34"></div>
+                <div class="stack-seg" style="background:#F7C9D7; height:0.06%;" title="Podcast · 5"></div>
+              </div>
+            </div>
+
+            <!-- FEVRIER (8640, 86.9%) -->
+            <div class="stacked-bar" style="height: 86.9%;">
+              <span class="stacked-bar-total">8 640</span>
+              <div class="stacked-bar-inner" style="height: 100%;">
+                <div class="stack-seg" style="background:#4285F4; height:49.12%;" title="Organic Search · 4 244"></div>
+                <div class="stack-seg" style="background:#F5A623; height:29.86%;" title="Paid Search · 2 580"></div>
+                <div class="stack-seg" style="background:#A678D9; height:7.22%;" title="Direct · 624"></div>
+                <div class="stack-seg" style="background:#A0C66B; height:4.49%;" title="Social · 388"></div>
+                <div class="stack-seg" style="background:#00BCD4; height:2.85%;" title="Email · 246"></div>
+                <div class="stack-seg" style="background:#E8C547; height:2.64%;" title="Internal · 228"></div>
+                <div class="stack-seg" style="background:#0ab38c; height:1.47%;" title="AI / LLM · 127"></div>
+                <div class="stack-seg" style="background:#E84C7E; height:1.19%;" title="Referral · 103"></div>
+                <div class="stack-seg" style="background:#9AC9FB; height:0.41%;" title="Paid Social · 35"></div>
+                <div class="stack-seg" style="background:#C9A77A; height:0.39%;" title="Affiliate · 34"></div>
+                <div class="stack-seg" style="background:#0d5572; height:0.36%;" title="Supports · 31"></div>
+              </div>
+            </div>
+
+            <!-- MARS (9942, 100%) -->
+            <div class="stacked-bar" style="height: 100%;">
+              <span class="stacked-bar-total">9 942</span>
+              <div class="stacked-bar-inner" style="height: 100%;">
+                <div class="stack-seg" style="background:#4285F4; height:48.72%;" title="Organic Search · 4 844"></div>
+                <div class="stack-seg" style="background:#F5A623; height:27.82%;" title="Paid Search · 2 766"></div>
+                <div class="stack-seg" style="background:#A678D9; height:7.10%;" title="Direct · 706"></div>
+                <div class="stack-seg" style="background:#A0C66B; height:6.20%;" title="Social · 617"></div>
+                <div class="stack-seg" style="background:#00BCD4; height:3.42%;" title="Email · 340"></div>
+                <div class="stack-seg" style="background:#E8C547; height:2.20%;" title="Internal · 219"></div>
+                <div class="stack-seg" style="background:#E84C7E; height:1.98%;" title="Referral · 197"></div>
+                <div class="stack-seg" style="background:#0ab38c; height:1.38%;" title="AI / LLM · 137"></div>
+                <div class="stack-seg" style="background:#9AC9FB; height:0.61%;" title="Paid Social · 61"></div>
+                <div class="stack-seg" style="background:#C9A77A; height:0.39%;" title="Affiliate · 39"></div>
+                <div class="stack-seg" style="background:#0d5572; height:0.15%;" title="Supports · 15"></div>
+                <div class="stack-seg" style="background:#F7C9D7; height:0.01%;" title="Podcast · 1"></div>
+              </div>
+            </div>
+
+            <!-- AVRIL (8261, 83.1%) -->
+            <div class="stacked-bar" style="height: 83.1%;">
+              <span class="stacked-bar-total">8 261</span>
+              <div class="stacked-bar-inner" style="height: 100%;">
+                <div class="stack-seg" style="background:#4285F4; height:49.13%;" title="Organic Search · 4 059"></div>
+                <div class="stack-seg" style="background:#F5A623; height:20.35%;" title="Paid Search · 1 681"></div>
+                <div class="stack-seg" style="background:#A678D9; height:9.32%;" title="Direct · 770"></div>
+                <div class="stack-seg" style="background:#A0C66B; height:7.59%;" title="Social · 627"></div>
+                <div class="stack-seg" style="background:#00BCD4; height:4.87%;" title="Email · 402"></div>
+                <div class="stack-seg" style="background:#E8C547; height:2.87%;" title="Internal · 237"></div>
+                <div class="stack-seg" style="background:#E84C7E; height:1.72%;" title="Referral · 142"></div>
+                <div class="stack-seg" style="background:#0ab38c; height:1.59%;" title="AI / LLM · 131"></div>
+                <div class="stack-seg" style="background:#9AC9FB; height:1.15%;" title="Paid Social · 95"></div>
+                <div class="stack-seg" style="background:#C9A77A; height:0.98%;" title="Affiliate · 81"></div>
+                <div class="stack-seg" style="background:#0d5572; height:0.34%;" title="Supports · 28"></div>
+                <div class="stack-seg" style="background:#F7C9D7; height:0.10%;" title="Podcast · 7"></div>
+              </div>
+            </div>
+
+            <!-- MAI (6133, 61.7%) -->
+            <div class="stacked-bar" style="height: 61.7%;">
+              <span class="stacked-bar-total">6 133</span>
+              <div class="stacked-bar-inner" style="height: 100%;">
+                <div class="stack-seg" style="background:#4285F4; height:51.84%;" title="Organic Search · 3 179"></div>
+                <div class="stack-seg" style="background:#F5A623; height:19.03%;" title="Paid Search · 1 167"></div>
+                <div class="stack-seg" style="background:#A678D9; height:9.41%;" title="Direct · 577"></div>
+                <div class="stack-seg" style="background:#A0C66B; height:6.98%;" title="Social · 428"></div>
+                <div class="stack-seg" style="background:#E84C7E; height:3.83%;" title="Referral · 235"></div>
+                <div class="stack-seg" style="background:#00BCD4; height:3.20%;" title="Email · 196"></div>
+                <div class="stack-seg" style="background:#E8C547; height:2.35%;" title="Internal · 144"></div>
+                <div class="stack-seg" style="background:#0ab38c; height:1.86%;" title="AI / LLM · 114"></div>
+                <div class="stack-seg" style="background:#9AC9FB; height:0.95%;" title="Paid Social · 58"></div>
+                <div class="stack-seg" style="background:#C9A77A; height:0.24%;" title="Affiliate · 15"></div>
+                <div class="stack-seg" style="background:#0d5572; height:0.23%;" title="Supports · 14"></div>
+                <div class="stack-seg" style="background:#F7C9D7; height:0.10%;" title="Podcast · 6"></div>
+              </div>
+            </div>
+
+            <!-- JUIN (7708, 77.5%) -->
+            <div class="stacked-bar" style="height: 77.5%;">
+              <span class="stacked-bar-total">7 708</span>
+              <div class="stacked-bar-inner" style="height: 100%;">
+                <div class="stack-seg" style="background:#4285F4; height:48.24%;" title="Organic Search · 3 718"></div>
+                <div class="stack-seg" style="background:#F5A623; height:20.97%;" title="Paid Search · 1 616"></div>
+                <div class="stack-seg" style="background:#00BCD4; height:8.95%;" title="Email · 690"></div>
+                <div class="stack-seg" style="background:#A678D9; height:8.32%;" title="Direct · 641"></div>
+                <div class="stack-seg" style="background:#A0C66B; height:4.26%;" title="Social · 328"></div>
+                <div class="stack-seg" style="background:#E8C547; height:2.84%;" title="Internal · 219"></div>
+                <div class="stack-seg" style="background:#0d5572; height:1.88%;" title="Supports · 145"></div>
+                <div class="stack-seg" style="background:#E84C7E; height:1.83%;" title="Referral · 141"></div>
+                <div class="stack-seg" style="background:#0ab38c; height:1.73%;" title="AI / LLM · 133"></div>
+                <div class="stack-seg" style="background:#C9A77A; height:0.74%;" title="Affiliate · 57"></div>
+                <div class="stack-seg" style="background:#9AC9FB; height:0.25%;" title="Paid Social · 19"></div>
+                <div class="stack-seg" style="background:#F7C9D7; height:0.01%;" title="Podcast · 1"></div>
+              </div>
+            </div>
+
+            <!-- JUILLET (5738, 57.7%) -->
+            <div class="stacked-bar" style="height: 57.7%;">
+              <span class="stacked-bar-total">5 738</span>
+              <div class="stacked-bar-inner" style="height: 100%;">
+                <div class="stack-seg" style="background:#4285F4; height:48.43%;" title="Organic Search · 2 779"></div>
+                <div class="stack-seg" style="background:#F5A623; height:22.38%;" title="Paid Search · 1 284"></div>
+                <div class="stack-seg" style="background:#A678D9; height:9.83%;" title="Direct · 564"></div>
+                <div class="stack-seg" style="background:#A0C66B; height:6.62%;" title="Social · 380"></div>
+                <div class="stack-seg" style="background:#00BCD4; height:4.41%;" title="Email · 253"></div>
+                <div class="stack-seg" style="background:#E8C547; height:2.84%;" title="Internal · 163"></div>
+                <div class="stack-seg" style="background:#E84C7E; height:2.25%;" title="Referral · 129"></div>
+                <div class="stack-seg" style="background:#9AC9FB; height:1.52%;" title="Paid Social · 87"></div>
+                <div class="stack-seg" style="background:#0ab38c; height:0.85%;" title="AI / LLM · 49"></div>
+                <div class="stack-seg" style="background:#C9A77A; height:0.56%;" title="Affiliate · 32"></div>
+                <div class="stack-seg" style="background:#0d5572; height:0.26%;" title="Supports · 15"></div>
+                <div class="stack-seg" style="background:#F7C9D7; height:0.03%;" title="Podcast · 2"></div>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="stacked-x">
+            <div>Jan</div>
+            <div>Fév</div>
+            <div>Mar</div>
+            <div>Avr</div>
+            <div>Mai</div>
+            <div>Juin</div>
+            <div>Juil</div>
+          </div>
+
+          <div class="stacked-legend">
+            <span class="lg-item"><span class="lg-swatch" style="background:#4285F4;"></span>Organic Search</span>
+            <span class="lg-item"><span class="lg-swatch" style="background:#F5A623;"></span>Paid Search</span>
+            <span class="lg-item"><span class="lg-swatch" style="background:#A678D9;"></span>Direct</span>
+            <span class="lg-item"><span class="lg-swatch" style="background:#A0C66B;"></span>Social</span>
+            <span class="lg-item"><span class="lg-swatch" style="background:#00BCD4;"></span>Email</span>
+            <span class="lg-item"><span class="lg-swatch" style="background:#E8C547;"></span>Internal</span>
+            <span class="lg-item"><span class="lg-swatch" style="background:#E84C7E;"></span>Referral</span>
+            <span class="lg-item"><span class="lg-swatch" style="background:#0ab38c;"></span>AI / LLM</span>
+            <span class="lg-item"><span class="lg-swatch" style="background:#9AC9FB;"></span>Paid Social</span>
+            <span class="lg-item"><span class="lg-swatch" style="background:#C9A77A;"></span>Affiliate</span>
+            <span class="lg-item"><span class="lg-swatch" style="background:#0d5572;"></span>Supports</span>
+            <span class="lg-item"><span class="lg-swatch" style="background:#F7C9D7;"></span>Podcast</span>
+          </div>
+        </div>
+
+        <div class="insight-callouts" style="margin-top: 14px;">
+          <div class="insight-card warning">
+            <h4>5 738 sessions, sous le creux de mai</h4>
+            <p>Juillet passe sous les 6 133 de mai et devient le point bas de 2026. Le trafic a perdu 42 % depuis le pic de mars.</p>
+          </div>
+          <div class="insight-card">
+            <h4>L'organique tient sa part</h4>
+            <p>2 779 sessions, 48 % du mix, exactement la part qu'il occupe depuis janvier. Il baisse avec le site, pas plus vite.</p>
+          </div>
+          <div class="insight-card">
+            <h4>Le payant monte en part relative</h4>
+            <p>22 % du mix contre 21 % en juin, alors que son volume baisse. Nous achetons une part croissante d'un trafic qui se réduit.</p>
+          </div>
+        </div>
+
+      </div>
+      <div class="company-logo"><img src="https://raw.githubusercontent.com/ayming-france/assets/main/logos/ayming-logo.png" alt="Ayming"></div>
+    </section>
+
+    <!-- ========== SLIDE 6: ENGAGEMENT - TOP TELECHARGEMENTS ========== -->
+    <section class="slide compact-fit" data-chapter="engagement" id="s-dl">
+      <style>
+        #s-dl .insight-card { padding:11px 14px; }
+        #s-dl .insight-card h4 { font-size:14px; margin-bottom:6px; }
+        #s-dl .insight-card p { font-size:12.5px; line-height:1.45; }
+        #s-dl .data-table tbody td { padding-top:4px; padding-bottom:4px; }
+      </style>
+      <div class="slide-inner insights">
+        <div class="slide-eyebrow">Engagement · Contenus téléchargés</div>
+        <h1 class="slide-title compact">Le Baromètre reste le premier contenu du site</h1>
+
+        <table class="data-table">
+          <thead><tr><th class="num" style="text-align:left;width:40px;">#</th><th>Contenu</th><th>BL</th><th class="num">Téléchargements</th></tr></thead>
+          <tbody>
+            <tr><td class="num" style="text-align:left;">1</td><td>18ème Baromètre de l'Absentéisme et de l'Engagement</td><td>HR</td><td class="num pos">185</td></tr>
+            <tr><td class="num" style="text-align:left;">2</td><td>10 questions RH sur la fin des notifications Risques Professionnels</td><td>HR</td><td class="num">109</td></tr>
+            <tr><td class="num" style="text-align:left;">3</td><td>Guide Financement Défense</td><td>FINTAX</td><td class="num">18</td></tr>
+            <tr><td class="num" style="text-align:left;">4</td><td>Guide Financements Publics</td><td>INNO</td><td class="num">14</td></tr>
+            <tr><td class="num" style="text-align:left;">5</td><td>Faux arrêts de travail : guide pratique pour employeurs vigilants</td><td>HR</td><td class="num">13</td></tr>
+            <tr><td class="num" style="text-align:left;">6</td><td>Guide du Contrôle Fiscal CIR</td><td>FINTAX</td><td class="num">12</td></tr>
+            <tr><td class="num" style="text-align:left;">7</td><td>Les 10 questions des directeurs fiscaux sur la TFi</td><td>FINTAX</td><td class="num">12</td></tr>
+            <tr><td class="num" style="text-align:left;">8</td><td>Livre blanc : les enjeux clés de la déclaration d'accident du travail</td><td>HR</td><td class="num">12</td></tr>
+          </tbody>
+        </table>
+
+        <p class="footnote" style="margin-top:6px; margin-bottom: 14px;">464 téléchargements · 15 inscriptions événements · 31 contacts formulaire. Classement compté par page. L'édition du Baromètre est identifiée par le lien de téléchargement, pas par le titre de la page.</p>
+
+        <div class="insight-callouts" style="margin-top: 10px;">
+          <div class="insight-card success">
+            <h4>185 téléchargements du Baromètre en juillet</h4>
+            <p>La page en avait fait 802 en juin, dont 667 via l'emailing de lancement. Sans campagne en juillet, elle garde un flux régulier. C'est le premier contenu du site, tous mois confondus.</p>
+          </div>
+          <div class="insight-card">
+            <h4>La page annonce encore l'édition 2025</h4>
+            <p>Le titre enregistré reste « 17ème Baromètre 2025 ». Le lien de téléchargement, capturé depuis le 9 juillet, tranche : 132 des 185 téléchargements pointent vers le PDF de la 18e édition. C'est le titre de la page qu'il faut corriger, pas le chiffre.</p>
+          </div>
+          <div class="insight-card">
+            <h4>INNO et FINTAX tiennent le reste du top</h4>
+            <p>Le guide Défense, les Financements Publics, le Contrôle Fiscal CIR et le guide TFi prennent quatre des six places suivantes, sur de petits volumes.</p>
+          </div>
+        </div>
+      </div>
+      <div class="company-logo"><img src="https://raw.githubusercontent.com/ayming-france/assets/main/logos/ayming-logo.png" alt="Ayming"></div>
+    </section>
+
+    <!-- ========== SLIDE 7: ENGAGEMENT - ARTICLES FORT TRAFIC ========== -->
+    <section class="slide compact-fit" data-chapter="engagement">
+      <div class="slide-inner insights">
+        <div class="slide-eyebrow">Engagement · Articles à fort trafic</div>
+        <h1 class="slide-title compact">Les articles courts se lisent, les piliers SEO se survolent</h1>
+
+        <style>
+          .articles-table { width:100%; border-collapse:collapse; font-size:12.5px; background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.04); }
+          .articles-table thead th { background:var(--ay-dark); color:#fff; text-align:left; padding:10px 14px; font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:0.3px; }
+          .articles-table thead th.num { text-align:right; }
+          .articles-table tbody td { padding:7px 14px; border-bottom:1px solid #f1f5f9; color:var(--ay-text); }
+          .articles-table tbody td.num { text-align:right; font-variant-numeric:tabular-nums; font-weight:600; }
+          .articles-table tbody td.title { max-width:400px; white-space:nowrap; }
+          .read-cell { display:flex; align-items:center; gap:9px; }
+          .read-bar { position:relative; flex:0 0 90px; height:14px; border-radius:7px; background:#eef2f7; overflow:hidden; }
+          .read-fill { position:absolute; left:0; top:0; bottom:0; border-radius:7px; }
+          .read-pct { font-weight:700; font-variant-numeric:tabular-nums; width:38px; }
+          .read-times { font-variant-numeric:tabular-nums; font-size:11.5px; color:var(--ay-gray); white-space:nowrap; }
+        </style>
+
+        <table class="articles-table">
+          <thead>
+            <tr>
+              <th>Titre</th>
+              <th class="num">Vues</th>
+              <th class="num">Clics SEO</th>
+              <th>Temps de lecture (passé / nécessaire)</th>
+              <th class="num">Scroll 90 %</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="title">Comprendre la subrogation des IJ de prévoyance en 3 minutes</td>
+              <td class="num">433</td><td class="num">398</td>
+              <td><div class="read-cell"><span class="read-bar"><span class="read-fill" style="width:33%;background:var(--ay-primary);"></span></span><span class="read-pct" style="color:var(--ay-text);">33 %</span><span class="read-times">2:06 / 6:25</span></div></td>
+              <td class="num">2,3 %</td>
+            </tr>
+            <tr>
+              <td class="title">Déclaration AT tardive : conséquences pour l'employeur</td>
+              <td class="num">245</td><td class="num">217</td>
+              <td><div class="read-cell"><span class="read-bar"><span class="read-fill" style="width:18%;background:var(--ay-primary);"></span></span><span class="read-pct" style="color:var(--ay-text);">18 %</span><span class="read-times">2:05 / 11:38</span></div></td>
+              <td class="num">2,0 %</td>
+            </tr>
+            <tr>
+              <td class="title">Déclaration d'accident du travail : 10 erreurs à éviter</td>
+              <td class="num">156</td><td class="num">145</td>
+              <td><div class="read-cell"><span class="read-bar"><span class="read-fill" style="width:26%;background:var(--ay-primary);"></span></span><span class="read-pct" style="color:var(--ay-text);">26 %</span><span class="read-times">1:33 / 5:57</span></div></td>
+              <td class="num">0,6 %</td>
+            </tr>
+            <tr>
+              <td class="title">Salaire et charges sociales : comment réduire ses cotisations ?</td>
+              <td class="num">105</td><td class="num">0</td>
+              <td><div class="read-cell"><span class="read-bar"><span class="read-fill" style="width:53%;background:var(--ay-primary);"></span></span><span class="read-pct" style="color:var(--ay-text);">53 %</span><span class="read-times">1:46 / 3:21</span></div></td>
+              <td class="num">1,9 %</td>
+            </tr>
+            <tr>
+              <td class="title">Exécution budgétaire 2025 : la Cour des comptes et le CIR</td>
+              <td class="num">75</td><td class="num">3</td>
+              <td><div class="read-cell"><span class="read-bar"><span class="read-fill" style="width:40%;background:var(--ay-primary);"></span></span><span class="read-pct" style="color:var(--ay-text);">40 %</span><span class="read-times">4:23 / 10:56</span></div></td>
+              <td class="num">1,3 %</td>
+            </tr>
+            <tr>
+              <td class="title">Subrogation des IJSS : toutes nos bonnes pratiques</td>
+              <td class="num">74</td><td class="num">0</td>
+              <td><div class="read-cell"><span class="read-bar"><span class="read-fill" style="width:94%;background:var(--ay-primary);"></span></span><span class="read-pct" style="color:var(--ay-text);">94 %</span><span class="read-times">2:55 / 3:07</span></div></td>
+              <td class="num">12,2 %</td>
+            </tr>
+            <tr>
+              <td class="title">CIR et subventions publiques : ce que la loi de finances 2025 change</td>
+              <td class="num">72</td><td class="num">10</td>
+              <td><div class="read-cell"><span class="read-bar"><span class="read-fill" style="width:69%;background:var(--ay-primary);"></span></span><span class="read-pct" style="color:var(--ay-text);">69 %</span><span class="read-times">4:34 / 6:35</span></div></td>
+              <td class="num">0,0 %</td>
+            </tr>
+            <tr>
+              <td class="title">Hausse du SMIC au 1er juin 2026 : un double impact financier</td>
+              <td class="num">72</td><td class="num">27</td>
+              <td><div class="read-cell"><span class="read-bar"><span class="read-fill" style="width:43%;background:var(--ay-primary);"></span></span><span class="read-pct" style="color:var(--ay-text);">43 %</span><span class="read-times">1:33 / 3:35</span></div></td>
+              <td class="num">2,8 %</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <p class="footnote" style="margin-top: 8px;">Articles à plus de 60 vues sur le mois. La barre donne la part du temps de lecture réellement passée sur la page, le temps moyen rapporté au temps qu'exige le texte. Le Scroll 90 % mesure autre chose, la part des visiteurs descendus jusqu'en bas de page. Les deux divergent sur les pages longues ou très illustrées.</p>
+
+        <div class="insight-callouts" style="grid-template-columns: 1fr 1fr; margin-top: 6px;">
+          <div class="insight-card warning">
+            <h4>La longueur décide de l'attention</h4>
+            <p>Les trois articles les plus consultés demandent 6 à 12 minutes et n'en captent que 18 à 33 %. Les deux articles de 3 minutes en captent 53 % et 94 %. Le trafic va aux longs, l'attention aux courts.</p>
+          </div>
+          <div class="insight-card">
+            <h4>Le seul article lu en entier ne vient pas du SEO</h4>
+            <p>« Subrogation des IJSS, toutes nos bonnes pratiques » capte 94 % du temps nécessaire et 12 % de scroll complet, avec zéro clic Google. Un bon contenu que la recherche ne trouve pas.</p>
+          </div>
+        </div>
+      </div>
+      <div class="company-logo"><img src="https://raw.githubusercontent.com/ayming-france/assets/main/logos/ayming-logo.png" alt="Ayming"></div>
+    </section>
+
+    <!-- ========== SLIDE 8: TRAFIC IA / LLM ========== -->
+    <section class="slide" data-chapter="llm" id="s-ia">
+      <style>
+        #s-ia .slide-inner.insights { padding-top:28px; padding-bottom:20px; }
+        #s-ia .data-table thead th { padding-top:9px; padding-bottom:9px; }
+        #s-ia .data-table tbody td { padding-top:12px; padding-bottom:12px; }
+        #s-ia .month-cell { padding:14px 12px; }
+        #s-ia .two-col { margin-top:24px; }
+        #s-ia .insight-callouts { margin-top:26px !important; }
+        #s-ia .insight-card { padding:18px 20px; }
+        #s-ia .two-col h3 { margin-bottom:16px; }
+      </style>
+      <div class="slide-inner insights">
+        <div class="slide-eyebrow">Émergent · Trafic IA générative</div>
+        <h1 class="slide-title compact">Le canal IA perd les deux tiers de son volume</h1>
+
+        <div class="two-col">
+          <div>
+            <h3>Sessions par moteur IA · juillet</h3>
+            <table class="data-table">
+              <thead><tr><th>Moteur</th><th class="num">Sessions</th><th class="num">Conv.</th><th class="num">CVR</th></tr></thead>
+              <tbody>
+                <tr><td><b>ChatGPT</b></td><td class="num neg">30</td><td class="num">3</td><td class="num">10,0 %</td></tr>
+                <tr><td>Perplexity</td><td class="num">11</td><td class="num">1</td><td class="num">9,1 %</td></tr>
+                <tr><td>Claude</td><td class="num">8</td><td class="num">1</td><td class="num">12,5 %</td></tr>
+                <tr><td>Copilot, Gemini, autre</td><td class="num">0</td><td class="num">0</td><td class="num">·</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div>
+            <h3>Toutes IA cumulées · Jan→Juil</h3>
+            <div class="month-trend" style="grid-template-columns:repeat(4,1fr);">
+              <div class="month-cell"><div class="m-label">Janvier</div><div class="m-val">128 sess.</div><div style="font-size:11px;color:var(--ay-gray);">18 conv.</div></div>
+              <div class="month-cell"><div class="m-label">Février</div><div class="m-val">127 sess.</div><div style="font-size:11px;color:var(--ay-gray);">7 conv.</div></div>
+              <div class="month-cell"><div class="m-label">Mars</div><div class="m-val">137 sess.</div><div style="font-size:11px;color:var(--ay-gray);">11 conv.</div></div>
+              <div class="month-cell"><div class="m-label">Avril</div><div class="m-val">131 sess.</div><div style="font-size:11px;color:var(--ay-gray);">30 conv.</div></div>
+              <div class="month-cell"><div class="m-label">Mai</div><div class="m-val">114 sess.</div><div style="font-size:11px;color:var(--ay-gray);">6 conv.</div></div>
+              <div class="month-cell"><div class="m-label">Juin</div><div class="m-val">133 sess.</div><div style="font-size:11px;color:var(--ay-gray);">27 conv.</div></div>
+              <div class="month-cell" style="background:var(--ay-primary); color:#fff;"><div class="m-label" style="color:rgba(255,255,255,0.85);">Juillet</div><div class="m-val" style="color:#fff;">49 sess.</div><div style="font-size:11px;color:rgba(255,255,255,0.95);">5 conv. · CVR 10&nbsp;%</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="insight-callouts" style="margin-top:18px;">
+          <div class="insight-card danger">
+            <h4>Première rupture depuis janvier</h4>
+            <p>Le canal tenait entre 114 et 137 sessions tous les mois. Il tombe à 49, une baisse de 63 % quand le site perd 26 %.</p>
+          </div>
+          <div class="insight-card">
+            <h4>Ce n'est pas un problème de mesure</h4>
+            <p>Vérifié dans les données : toutes les sources IA restent classées dans le canal, aucune n'a basculé ailleurs. La baisse est réelle.</p>
+          </div>
+          <div class="insight-card">
+            <h4>ChatGPT recule le plus</h4>
+            <p>107 sessions en juin, 30 en juillet. Perplexity et Claude tiennent leur niveau, ce qui pointe vers ChatGPT plutôt que vers le canal entier.</p>
+          </div>
+        </div>
+      </div>
+      <div class="company-logo"><img src="https://raw.githubusercontent.com/ayming-france/assets/main/logos/ayming-logo.png" alt="Ayming"></div>
+    </section>
+
+    <!-- ========== SLIDE 9: RECOMMANDATIONS ========== -->
+    <section class="slide compact-fit" data-chapter="actions">
+      <div class="slide-inner insights">
+        <div class="slide-eyebrow">Plan d'action</div>
+        <h1 class="slide-title compact">4 actions prioritaires</h1>
+
+        <div class="reco-list">
+          <div class="reco-item">
+            <div class="reco-num">1</div>
+            <h4>Nourrir la demande continue du Baromètre</h4>
+            <p>185 téléchargements en juillet sans aucune campagne, puis 108 en août. Ces contacts arrivent seuls et ne reçoivent aujourd'hui aucune séquence. Brancher une relance automatique sur ce formulaire ferait travailler le premier contenu du site toute l'année, et pas seulement au lancement.</p>
+            <span class="reco-owner">Owner : Campaigns</span>
+          </div>
+
+          <div class="reco-item">
+            <div class="reco-num">2</div>
+            <h4>Comprendre le décrochage du canal IA</h4>
+            <p>49 sessions en juillet contre 133 en juin, alors que le canal tenait 114 à 137 depuis janvier. ChatGPT porte tout le recul, Perplexity et Claude tiennent. Vérifier si nos pages sont encore citées et si la saisonnalité suffit à l'expliquer, avant d'en tirer une conclusion.</p>
+            <span class="reco-owner">Owner : SEO + Data</span>
+          </div>
+
+          <div class="reco-item">
+            <div class="reco-num">3</div>
+            <h4>Tenir la promesse de durée des piliers SEO</h4>
+            <p>Les trois articles les plus consultés exigent 6 à 12 minutes et n'en captent que 18 à 33 %. Ajouter un résumé « l'essentiel en 3 minutes » en tête et remonter le CTA avant le premier tiers, là où les lecteurs sont encore présents.</p>
+            <span class="reco-owner">Owner : Content + Web</span>
+          </div>
+
+          <div class="reco-item">
+            <div class="reco-num">4</div>
+            <h4>Arbitrer le Paid Search</h4>
+            <p>2,6 % de CVR en juillet, sous l'organique à 2,7 %, deuxième mois consécutif sous le gratuit, et sa part du mix monte à 22 %. Auditer les URLs de destination et les UTM, souvent oubliés par l'agence, et couper les campagnes qui ne convertissent pas avant la rentrée.</p>
+            <span class="reco-owner">Owner : SEA</span>
+          </div>
+        </div>
+
+      </div>
+      <div class="company-logo"><img src="https://raw.githubusercontent.com/ayming-france/assets/main/logos/ayming-logo.png" alt="Ayming"></div>
+    </section>
+
+  </main>
+
+  <!-- Keyboard Hint -->
+  <div class="keyboard-hint">
+    <span><span class="key" id="key-prev">←</span><span class="key" id="key-next">→</span> Naviguer</span>
+    <span><span class="key" id="key-fullscreen">F</span> Plein écran</span>
+  </div>
+
+  <!-- Author credit (anti-plagiarism) -->
+  <div class="deck-credit">José J Encarnación Saiter | Marketing France · 15 septembre 2026</div>
+
+  <script src="https://ayming-france.github.io/assets/engine/slides.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script>lucide.createIcons();</script>
+  <script>
+    // Hide the global grey credit while the dark cover slide is active (cover has its own white credit)
+    (function () {
+      var cover = document.querySelector('.slide.cover');
+      var credit = document.querySelector('.deck-credit');
+      if (!cover || !credit) return;
+      var sync = function () {
+        credit.style.visibility = cover.classList.contains('active') ? 'hidden' : 'visible';
+      };
+      sync();
+      new MutationObserver(sync).observe(cover, { attributes: true, attributeFilter: ['class'] });
+    })();
+  </script>
+
+</body>
+</html>
